@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1020">
   <meta name="description" content="Pause90 Pocket Reset Kit: seven guided 90-second general-wellness reset cards, a seven-day practice, tracker, and pocket reference. $9 one-time.">
+  <meta name="robots" content="index,follow">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Pause90 Pocket Reset Kit — $9">
   <meta property="og:description" content="A 14-page personal-use PDF for taking one small, guided pause when life feels crowded.">
@@ -14,6 +15,29 @@
   <meta name="twitter:title" content="Pause90 Pocket Reset Kit — $9">
   <meta name="twitter:description" content="Seven guided 90-second general-wellness pauses, a seven-day practice, tracker, and pocket reference.">
   <link rel="canonical" href="https://arigitshub.github.io/pause90-privacy-page/kit.html">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "Pause90 Pocket Reset Kit",
+      "description": "A 14-page personal-use PDF with seven guided 90-second general-wellness reset cards, a seven-day practice, a simple tracker, and a pocket reference.",
+      "brand": {
+        "@type": "Brand",
+        "name": "Pause90"
+      },
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "USD",
+        "price": "9.00",
+        "availability": "https://schema.org/InStock",
+        "url": "https://arigitshub.github.io/pause90-privacy-page/kit.html",
+        "seller": {
+          "@type": "Organization",
+          "name": "Zencore"
+        }
+      }
+    }
+  </script>
   <title>Pause90 Pocket Reset Kit — $9</title>
   <style>
     :root {
@@ -508,7 +532,31 @@
     (() => {
       const button = document.getElementById("share-kit");
       const status = document.getElementById("share-status");
-      const url = "https://arigitshub.github.io/pause90-privacy-page/kit.html";
+      const canonicalUrl = "https://arigitshub.github.io/pause90-privacy-page/kit.html";
+      const allowedSources = new Set([
+        "direct",
+        "share",
+        "search",
+        "youtube",
+        "instagram",
+        "tiktok",
+        "reddit",
+        "email",
+        "whatsapp",
+        "partner",
+        "community"
+      ]);
+      const requestedSource = (new URLSearchParams(window.location.search).get("src") || "direct").toLowerCase();
+      const source = allowedSources.has(requestedSource) ? requestedSource : "direct";
+      const checkoutReference = `p90_${source}_v1`;
+
+      document.querySelectorAll('a[href^="https://buy.stripe.com/aFaaEXfti13b8044KmdAk06"]').forEach((link) => {
+        const checkoutUrl = new URL(link.href);
+        checkoutUrl.searchParams.set("client_reference_id", checkoutReference);
+        link.href = checkoutUrl.toString();
+      });
+
+      const url = `${canonicalUrl}?src=share`;
       const shareData = {
         title: "Pause90 Pocket Reset Kit",
         text: "A practical 14-page general-wellness toolkit built around guided 90-second pauses.",

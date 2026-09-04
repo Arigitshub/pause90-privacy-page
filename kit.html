@@ -8,6 +8,12 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="Pause90 Pocket Reset Kit — $9">
   <meta property="og:description" content="A 14-page personal-use PDF for taking one small, guided pause when life feels crowded.">
+  <meta property="og:url" content="https://arigitshub.github.io/pause90-privacy-page/kit.html">
+  <meta property="og:site_name" content="Pause90">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Pause90 Pocket Reset Kit — $9">
+  <meta name="twitter:description" content="Seven guided 90-second general-wellness pauses, a seven-day practice, tracker, and pocket reference.">
+  <link rel="canonical" href="https://arigitshub.github.io/pause90-privacy-page/kit.html">
   <title>Pause90 Pocket Reset Kit — $9</title>
   <style>
     :root {
@@ -318,6 +324,42 @@
 
     .close p { max-width: 680px; margin: 16px auto 26px; color: var(--muted); }
 
+    .share-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .share-btn {
+      min-height: 46px;
+      padding: 11px 18px;
+      border: 1px solid rgba(105, 226, 220, .42);
+      border-radius: 14px;
+      color: var(--ink);
+      background: rgba(105, 226, 220, .08);
+      font: inherit;
+      font-weight: 780;
+      cursor: pointer;
+    }
+
+    .share-btn:hover,
+    .share-btn:focus-visible {
+      background: rgba(105, 226, 220, .14);
+    }
+
+    .share-btn:focus-visible {
+      outline: 3px solid var(--cyan);
+      outline-offset: 4px;
+    }
+
+    .share-status {
+      min-height: 1.4em;
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
     .fine {
       max-width: 750px;
       margin: 24px auto 0;
@@ -345,6 +387,8 @@
       .inside, .close { margin-top: 54px; }
       .cta-row, .cta { width: 100%; }
       .price-note { text-align: center; }
+      .share-row { flex-direction: column; }
+      .share-btn { width: 100%; }
       footer { flex-direction: column; }
     }
 
@@ -447,6 +491,10 @@
       <h2 id="close-title">Try the smallest useful pause.</h2>
       <p>Buy the founding validation edition for $9. After checkout, the approved PDF will be sent to your checkout email within 24 hours.</p>
       <a class="cta" href="https://buy.stripe.com/aFaaEXfti13b8044KmdAk06">Continue to secure checkout</a>
+      <div class="share-row">
+        <button class="share-btn" id="share-kit" type="button">Share this kit</button>
+        <span class="share-status" id="share-status" role="status" aria-live="polite"></span>
+      </div>
       <p class="fine">Pause90 is a general-wellness resource. It does not diagnose, treat, prevent, or cure any condition and is not a substitute for professional care or emergency help. Personal use only; do not resell, repost, or redistribute.</p>
     </section>
   </main>
@@ -455,5 +503,55 @@
     <span>Pause90 Pocket Reset Kit v1 · Sold by Zencore</span>
     <span>Questions: <a href="mailto:arimail@duck.com">arimail@duck.com</a></span>
   </footer>
+
+  <script>
+    (() => {
+      const button = document.getElementById("share-kit");
+      const status = document.getElementById("share-status");
+      const url = "https://arigitshub.github.io/pause90-privacy-page/kit.html";
+      const shareData = {
+        title: "Pause90 Pocket Reset Kit",
+        text: "A practical 14-page general-wellness toolkit built around guided 90-second pauses.",
+        url
+      };
+
+      async function copyLink() {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(url);
+          return;
+        }
+        const field = document.createElement("textarea");
+        field.value = url;
+        field.setAttribute("readonly", "");
+        field.style.position = "fixed";
+        field.style.opacity = "0";
+        document.body.appendChild(field);
+        field.select();
+        document.execCommand("copy");
+        field.remove();
+      }
+
+      button.addEventListener("click", async () => {
+        status.textContent = "";
+        try {
+          if (navigator.share) {
+            await navigator.share(shareData);
+            status.textContent = "Share sheet opened.";
+          } else {
+            await copyLink();
+            status.textContent = "Link copied.";
+          }
+        } catch (error) {
+          if (error && error.name === "AbortError") return;
+          try {
+            await copyLink();
+            status.textContent = "Link copied.";
+          } catch {
+            status.textContent = "Copy the page address from your browser.";
+          }
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

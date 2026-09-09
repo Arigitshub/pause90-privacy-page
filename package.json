@@ -25,6 +25,12 @@
   },
   "homepage": "https://github.com/Arigitshub/pause90-privacy-page#readme",
   "dependencies": {
+    "@vercel/functions": "^3.9.7",
+    "drizzle-orm": "^0.45.2",
+    "pg": "^8.23.0",
     "stripe": "^22.6.2"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.10"
   }
 }

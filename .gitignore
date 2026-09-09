@@ -1,0 +1,10 @@
+node_modules/
+.vercel/
+.env*
+!.env.example
+private-products/
+public/
+scripts/make-products.py
+.stripe-delivery-key
+.vercel
+DELIVERY_SETUP.md

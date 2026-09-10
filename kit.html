@@ -316,6 +316,26 @@
 
     .inside > div > p { color: var(--muted); }
 
+    .cover-preview {
+      width: min(100%, 330px);
+      margin: 28px 0 0;
+    }
+
+    .cover-preview img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .cover-preview figcaption {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
     ul {
       display: grid;
       gap: 13px;
@@ -505,6 +525,10 @@
         <p class="eyebrow">What is inside</p>
         <h2 id="inside-title">Enough structure to begin. No giant program.</h2>
         <p>This first edition is intentionally compact and designed for adults who want a practical personal routine.</p>
+        <figure class="cover-preview" id="actual-cover">
+          <a href="pocket-reset-kit-preview.png"><img src="pocket-reset-kit-preview.png" alt="Actual first page of the Pocket Reset Kit describing the seven guided pauses, seven-day practice, tracker, and pocket reference." width="612" height="792" loading="lazy"></a>
+          <figcaption>Actual first page of the 14-page PDF. Tap to enlarge.</figcaption>
+        </figure>
       </div>
       <ul>
         <li>Seven guided 90-second general-wellness reset cards</li>

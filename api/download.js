@@ -16,7 +16,7 @@ module.exports = async function handler(req, res) {
   const key = process.env.STRIPE_RESTRICTED_KEY;
   if (!['test', 'live'].includes(process.env.DELIVERY_MODE) || !key ||
       !key.startsWith(live ? 'rk_live_' : 'rk_test_'))
-    return res.status(503).send('Downloads are not configured yet. Contact arimail@duck.com for your PDF.');
+    return res.status(503).send('Downloads are not configured yet. Contact ari532477@gmail.com for your PDF.');
   const catalog = live ? offers : {
     ...(process.env.TEST_TINY_WIN_PAYMENT_LINK ? { [process.env.TEST_TINY_WIN_PAYMENT_LINK]: { amount: 300, file: 'one-tiny-win.pdf' } } : {}),
     ...(process.env.TEST_KIT_PAYMENT_LINK ? { [process.env.TEST_KIT_PAYMENT_LINK]: { amount: 900, file: 'pocket-reset-kit.pdf' } } : {}),
@@ -34,6 +34,6 @@ module.exports = async function handler(req, res) {
     return res.status(200).send(bytes);
   } catch {
     // Do not log session IDs, customer email, keys or provider error payloads.
-    return res.status(503).send('Your download is temporarily unavailable. Try again or contact arimail@duck.com.');
+    return res.status(503).send('Your download is temporarily unavailable. Try again or contact ari532477@gmail.com.');
   }
 };

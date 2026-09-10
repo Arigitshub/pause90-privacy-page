@@ -2,6 +2,12 @@
 
 Status: Gmail implementation prepared; not activated. Existing payment-verified downloads remain independent of email delivery.
 
+## Temporary fulfillment fallback
+
+Codex automation `pause90-paid-pdf-fulfillment` is now active with a six-hour interval. It follows `D:\Ari\Dropzone\pause90-fulfillment-fallback.md` and records delivery state in `D:\Ari\Dropzone\pause90-fulfillment-state`. It uses connected Stripe and Gmail, with `ari532477@gmail.com` as sender. This agent workflow uses AI tokens, unlike the ordinary Apps Script timer. Initial live checks returned zero completed orders for both offers; no email was sent. Future execution depends on access to this local workspace and the connected tools.
+
+Before activating Apps Script, pause automation `pause90-paid-pdf-fulfillment`, reconcile uncertain attempts, and import each sent order's full SHA-256 hash into Script Properties as `order_[hash]=sent`. Do not run independent workers concurrently or discard fulfillment history.
+
 ## Behavior
 
 The Google Apps Script in `google-apps-script/` runs under the approved account `ari532477@gmail.com`. A five-minute timer invokes ordinary code and uses no AI tokens. The sender and reply address are that Gmail account. No domain mailbox, Resend account, or database is required.
@@ -24,4 +30,6 @@ To pause, run `pauseDelivery`. To stop order access, set Vercel's `GMAIL_DELIVER
 
 ## Current limitation
 
-Browser navigation is timing out even though the Chrome extension can list tabs. The Apps Script project, token and trigger have not been created. Automatic email delivery is therefore not running.
+Chrome retry on September 9, 2026: tab listing succeeds, but navigation to Google Apps Script and accessibility inspection both time out. Chrome is running and the ChatGPT extension is installed and enabled. The native-host diagnostic also reports a missing expected extension origin; this has not been established as the cause of the timeouts. The documented recovery is to reinstall the browser plugin through the app UI, then retry Chrome control.
+
+The Apps Script project, token and trigger have not been created. No deployment or email send was performed during this retry. The ordinary five-minute timer is not running; the six-hour connector automation above is now the fallback. No buyer delivery has yet been observed because there are no completed orders.

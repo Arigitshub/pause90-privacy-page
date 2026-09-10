@@ -9,6 +9,6 @@ for (const name of ['one-tiny-win.pdf', 'pocket-reset-kit.pdf']) {
 }
 fs.mkdirSync(path.join(root, 'public'), { recursive: true });
 // Explicit allowlist: paid PDFs and server code can never enter static output.
-for (const name of ['index.html', 'kit.html', 'one-tiny-win.html', 'Pause90_One_Tiny_Win_Sample_v1.pdf', 'one-tiny-win-preview.png', 'pocket-reset-kit-preview.png', 'make-a-task-smaller.html', 'sitemap.xml']) {
+for (const name of ['index.html', 'privacy.html', 'kit.html', 'one-tiny-win.html', 'Pause90_One_Tiny_Win_Sample_v1.pdf', 'one-tiny-win-preview.png', 'pocket-reset-kit-preview.png', 'make-a-task-smaller.html', 'sitemap.xml']) {
   fs.copyFileSync(path.join(root, name), path.join(root, 'public', name));
 }

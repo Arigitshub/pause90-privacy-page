@@ -366,7 +366,7 @@
     (() => {
       const checkoutBase = "https://buy.stripe.com/5kQaEX1CsdPXgwAgt4dAk07";
       const canonicalUrl = "https://arigitshub.github.io/pause90-privacy-page/one-tiny-win.html";
-      const allowedSources = new Set(["direct", "share", "search", "youtube", "instagram", "facebook", "tiktok", "reddit", "email", "whatsapp", "partner", "community"]);
+      const allowedSources = new Set(["direct", "share", "search", "youtube", "instagram", "facebook", "tiktok", "reddit", "email", "whatsapp", "partner", "community", "product"]);
       const requestedSource = (new URLSearchParams(window.location.search).get("src") || "direct").toLowerCase();
       const source = allowedSources.has(requestedSource) ? requestedSource : "direct";
       const reference = `p90_${source}_v1`;

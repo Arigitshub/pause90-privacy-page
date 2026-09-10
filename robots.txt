@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://arigitshub.github.io/pause90-privacy-page/sitemap.xml

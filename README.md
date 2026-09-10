@@ -5,7 +5,7 @@ Pause90 offers small printable tools for choosing one visible next action when a
 ## Start free
 
 - [Read the complete task-shrinking exercise](https://arigitshub.github.io/pause90-privacy-page/make-a-task-smaller.html?src=partner)
-- [Download the two-page One Tiny Win sample](https://arigitshub.github.io/pause90-privacy-page/Pause90_One_Tiny_Win_Sample_v1.pdf)
+- [Download the two-page One Tiny Win sample](https://github.com/Arigitshub/pause90-privacy-page/releases/download/v1.0.0/Pause90_One_Tiny_Win_Sample_v1.pdf)
 
 No email or account is required for the free material.
 

@@ -1,0 +1,11 @@
+.git
+.env*
+.stripe-delivery-key
+node_modules
+public
+scripts/make-products.py
+private-products/*.png
+private-products/manifest.json
+lib/*.test.cjs
+DELIVERY_SETUP.md
+private-products/*.json

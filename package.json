@@ -1,0 +1,30 @@
+{
+  "name": "pause90-delivery-review",
+  "version": "1.0.0",
+  "description": "Existing Pause90 PDF storefront and payment-verified delivery",
+  "private": true,
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "node --test lib/entitlement.test.cjs",
+    "build": "node scripts/build.cjs",
+    "revenue": "node scripts/revenue.cjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arigitshub/pause90-privacy-page.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Arigitshub/pause90-privacy-page/issues"
+  },
+  "homepage": "https://github.com/Arigitshub/pause90-privacy-page#readme",
+  "dependencies": {
+    "stripe": "^22.6.2"
+  }
+}

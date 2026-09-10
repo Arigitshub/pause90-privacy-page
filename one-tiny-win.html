@@ -344,17 +344,21 @@
 
   <footer class="shell">
     <span>Pause90 One Tiny Win v1 - Sold by Zencore</span>
-    <span>Questions: <a href="mailto:arimail@duck.com">arimail@duck.com</a></span>
+    <span>Questions: <a href="mailto:ari532477@gmail.com">ari532477@gmail.com</a></span>
   </footer>
 
   <script>
     (() => {
       const checkoutBase = "https://buy.stripe.com/5kQaEX1CsdPXgwAgt4dAk07";
       const canonicalUrl = "https://arigitshub.github.io/pause90-privacy-page/one-tiny-win.html";
-      const allowedSources = new Set(["direct", "share", "search", "youtube", "instagram", "tiktok", "reddit", "email", "whatsapp", "partner", "community"]);
+      const allowedSources = new Set(["direct", "share", "search", "youtube", "instagram", "facebook", "tiktok", "reddit", "email", "whatsapp", "partner", "community"]);
       const requestedSource = (new URLSearchParams(window.location.search).get("src") || "direct").toLowerCase();
       const source = allowedSources.has(requestedSource) ? requestedSource : "direct";
       const reference = `p90_${source}_v1`;
+
+      document.querySelectorAll('a[href="kit.html"], a[href="one-tiny-win.html"]').forEach((link) => {
+        link.setAttribute("href", `${link.getAttribute("href")}?src=${source}`);
+      });
 
       document.querySelectorAll(".checkout").forEach((link) => {
         const url = new URL(checkoutBase);

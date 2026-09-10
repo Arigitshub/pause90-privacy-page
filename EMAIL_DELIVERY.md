@@ -1,6 +1,6 @@
 # Automatic PDF email delivery
 
-Status: Gmail implementation prepared; not activated. Existing payment-verified downloads remain independent of email delivery.
+Status: the ordinary five-minute Gmail implementation is prepared but not activated. Payment-verified downloads are live and independent. The active six-hour Codex fallback below provides automated email recovery until the ordinary worker replaces it.
 
 ## Temporary fulfillment fallback
 
@@ -24,7 +24,7 @@ The worker checks remaining email quota and its runtime budget. Orders resume on
 2. Generate a random private token of at least 40 characters. Store it only in the project's Script Properties as `GMAIL_DELIVERY_TOKEN` and in Vercel as a sensitive environment variable of the same name. Never put it in source control or logs.
 3. Deploy the order endpoint with the existing restricted Stripe read key, `DELIVERY_MODE=live`, and `GMAIL_DELIVERY_ENABLED=true` after the worker is configured.
 4. Run `installDelivery` under the approved Gmail account and complete Google's authorization flow. It installs the timer; it does not make a purchase or immediately send an email. The timer will fulfill eligible real orders, including earlier unpaid-delivery backlog from the configured start date.
-5. Check trigger installation and subsequent execution status. Retain the current email-within-24-hours promise until activation is confirmed. No purchase or payment simulation is required or authorized for this work.
+5. Check trigger installation and subsequent execution status. Keep the live customer wording limited to verified instant download plus automated email recovery; do not claim five-minute delivery until activation is confirmed. No purchase or payment simulation is required or authorized for this work.
 
 To pause, run `pauseDelivery`. To stop order access, set Vercel's `GMAIL_DELIVERY_ENABLED=false` and deploy. Keep fulfillment history intact.
 

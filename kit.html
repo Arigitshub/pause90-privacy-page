@@ -434,7 +434,7 @@
   <main class="shell">
     <section class="hero" aria-labelledby="hero-title">
       <div>
-        <p class="eyebrow">Founding validation edition · Digital PDF</p>
+        <p class="eyebrow">Pocket Reset Kit · Digital PDF</p>
         <h1 id="hero-title">A smaller next step starts with <span class="accent">90 seconds.</span></h1>
         <p class="lede">Seven guided, low-demand pauses for moments when life feels crowded—plus a seven-day practice, simple tracker, and pocket reference.</p>
         <div class="cta-row">
@@ -514,7 +514,7 @@
     <section class="close" aria-labelledby="close-title">
       <p class="eyebrow">One quiet interval</p>
       <h2 id="close-title">Try the smallest useful pause.</h2>
-      <p>Buy the founding validation edition for $9. After checkout, the approved PDF will be sent to your checkout email within 24 hours.</p>
+      <p>Get the 14-page PDF for $9. After checkout, it will be sent to your checkout email within 24 hours.</p>
       <a class="cta" href="https://buy.stripe.com/aFaaEXfti13b8044KmdAk06">Continue to secure checkout</a>
       <div class="share-row">
         <button class="share-btn" id="share-kit" type="button">Share this kit</button>
@@ -526,7 +526,7 @@
 
   <footer class="shell">
     <span>Pause90 Pocket Reset Kit v1 · Sold by Zencore</span>
-    <span>Questions: <a href="mailto:arimail@duck.com">arimail@duck.com</a></span>
+    <span>Questions: <a href="mailto:ari532477@gmail.com">ari532477@gmail.com</a></span>
   </footer>
 
   <script>
@@ -540,6 +540,7 @@
         "search",
         "youtube",
         "instagram",
+        "facebook",
         "tiktok",
         "reddit",
         "email",
@@ -550,6 +551,10 @@
       const requestedSource = (new URLSearchParams(window.location.search).get("src") || "direct").toLowerCase();
       const source = allowedSources.has(requestedSource) ? requestedSource : "direct";
       const checkoutReference = `p90_${source}_v1`;
+
+      document.querySelectorAll('a[href="kit.html"], a[href="one-tiny-win.html"]').forEach((link) => {
+        link.setAttribute("href", `${link.getAttribute("href")}?src=${source}`);
+      });
 
       document.querySelectorAll('a[href^="https://buy.stripe.com/aFaaEXfti13b8044KmdAk06"]').forEach((link) => {
         const checkoutUrl = new URL(link.href);

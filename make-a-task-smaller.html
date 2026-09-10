@@ -64,7 +64,7 @@
   </main>
   <script>
     (() => {
-      const allowed = new Set(["direct","share","search","youtube","instagram","facebook","tiktok","reddit","email","whatsapp","partner","community","product"]);
+      const allowed = new Set(["direct","share","search","youtube","instagram","facebook","tiktok","reddit","email","whatsapp","partner","community","product","sample"]);
       const requested = (new URLSearchParams(location.search).get("src") || "search").toLowerCase();
       const source = allowed.has(requested) ? requested : "search";
       document.querySelectorAll('a[href="one-tiny-win.html"]').forEach((link) => {

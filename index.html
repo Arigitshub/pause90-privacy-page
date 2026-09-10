@@ -28,7 +28,7 @@
   <footer class="shell"><span>Pause90 digital resources · Sold by Zencore</span><span><a href="privacy.html">Privacy</a> · <a href="mailto:ari532477@gmail.com">Support</a></span></footer>
   <script>
     (() => {
-      const allowed = new Set(["direct","share","search","youtube","instagram","facebook","tiktok","reddit","email","whatsapp","partner","community","product"]);
+      const allowed = new Set(["direct","share","search","youtube","instagram","facebook","tiktok","reddit","email","whatsapp","partner","community","product","sample"]);
       const requested = (new URLSearchParams(location.search).get("src") || "direct").toLowerCase();
       const source = allowed.has(requested) ? requested : "direct";
       document.querySelectorAll('a[href="one-tiny-win.html"],a[href="kit.html"],a[href="make-a-task-smaller.html"]').forEach((link) => {

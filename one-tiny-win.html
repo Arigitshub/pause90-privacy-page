@@ -371,7 +371,7 @@
       const source = allowedSources.has(requestedSource) ? requestedSource : "direct";
       const reference = `p90_${source}_v1`;
 
-      document.querySelectorAll('a[href="kit.html"], a[href="one-tiny-win.html"]').forEach((link) => {
+      document.querySelectorAll('a[href="kit.html"], a[href="one-tiny-win.html"], a[href="make-a-task-smaller.html"]').forEach((link) => {
         link.setAttribute("href", `${link.getAttribute("href")}?src=${source}`);
       });
 

@@ -7,8 +7,9 @@ async function main() {
   if (!key?.startsWith('rk_live_')) throw new Error('A live restricted read key is required; test data cannot count as revenue.');
   const stripe = new Stripe(key, { maxNetworkRetries: 1, timeout: 15000 });
   const end = Math.floor(Date.now() / 1000), start = end - 7 * 86400;
-  const report = { periodStart: new Date(start*1000).toISOString(), periodEnd: new Date(end*1000).toISOString(), targetCents: 30500, currency: 'usd', paidOrderCount: 0, grossCents: 0, refundedCents: 0, disputedCents: 0, excludedSelfOrTestOrders: 0, unclassifiedOrders: 0, feesCents: null, netAfterFeesCents: null, offers: [] };
+  const report = { periodStart: new Date(start*1000).toISOString(), periodEnd: new Date(end*1000).toISOString(), targetCents: 30500, currency: 'usd', paidOrderCount: 0, grossCents: 0, refundedCents: 0, disputedCents: 0, excludedSelfOrTestOrders: 0, unclassifiedOrders: 0, feesCents: null, netAfterFeesCents: null, offers: [], sources: [] };
   const seen = new Set();
+  const sources = new Map();
   for (const [payment_link, offer] of Object.entries(offers)) {
     const row = { product: offer.file, paidOrders: 0, grossCents: 0, refundedCents: 0, disputedCents: 0 };
     // Paginate all completed sessions so a checkout opened earlier but paid this week is included.
@@ -25,12 +26,22 @@ async function main() {
       row.paidOrders++; row.grossCents += charge.amount;
       row.refundedCents += charge.amount_refunded || 0;
       if (charge.disputed) row.disputedCents += Math.max(0, charge.amount - (charge.amount_refunded || 0));
+      // Payment Links preserve this non-sensitive attribution tag on the Checkout Session.
+      const match = typeof s.client_reference_id === 'string' && /^p90_([a-z0-9_]+)_v1$/.exec(s.client_reference_id);
+      const source = match ? match[1] : 'unattributed';
+      const sourceRow = sources.get(source) || { source, paidOrders: 0, grossCents: 0, refundedCents: 0, disputedCents: 0 };
+      sourceRow.paidOrders++;
+      sourceRow.grossCents += charge.amount;
+      sourceRow.refundedCents += charge.amount_refunded || 0;
+      if (charge.disputed) sourceRow.disputedCents += Math.max(0, charge.amount - (charge.amount_refunded || 0));
+      sources.set(source, sourceRow);
     }
     report.paidOrderCount += row.paidOrders; report.grossCents += row.grossCents;
     report.refundedCents += row.refundedCents; report.disputedCents += row.disputedCents;
     report.offers.push(row);
   }
   report.receiptsAfterRefundsAndDisputesCents = report.grossCents - report.refundedCents - report.disputedCents;
+  report.sources = [...sources.values()].sort((a, b) => b.grossCents - a.grossCents || a.source.localeCompare(b.source));
   report.remainingBeforeFeesCents = Math.max(0, report.targetCents - report.receiptsAfterRefundsAndDisputesCents);
   report.notes = ['Cash receipts for charges created in the trailing seven days, adjusted for their current refunds/disputes. Not accounting profit or a historical refund ledger.', 'Fees, tax and other costs are not deducted. Buyer independence cannot be inferred from payment alone; unidentified self-purchases require reconciliation.', 'Automated fulfillment and recurring weekly performance require separate evidence. This report never declares the overall goal achieved.'];
   console.log(JSON.stringify(report, null, 2));

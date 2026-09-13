@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A free one-page Pause90 prototype for turning time fog into one visible next action.">
+<meta name="robots" content="index,follow"><title>ADHD Time Anchor — Free Pause90 Prototype</title>
+<style>
+:root{--ink:#17263d;--muted:#637084;--paper:#fffaf2;--mint:#dff4ea;--green:#126859;--line:#d8dde5;--yellow:#f5c95f;--white:#fff}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.45}.shell{width:min(980px,calc(100% - 32px));margin:auto}header{display:flex;justify-content:space-between;align-items:center;padding:22px 0;border-bottom:1px solid var(--line)}header a{color:var(--green);font-weight:850;text-decoration:none}.hero{padding:52px 0 28px}.eyebrow{color:var(--green);font-weight:900;letter-spacing:.11em;text-transform:uppercase;font-size:.78rem}h1{margin:8px 0 12px;font-size:clamp(2.7rem,8vw,5.6rem);line-height:.95;letter-spacing:-.045em}.lead{max-width:670px;color:var(--muted);font-size:1.1rem}.timer{display:flex;align-items:center;gap:12px;margin-top:22px}.timer button,.print{border:0;border-radius:999px;background:var(--ink);color:white;padding:13px 18px;font-weight:850;cursor:pointer}.clock{font-weight:950;font-size:1.35rem}.board{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:28px 0}.lane{min-height:230px;padding:20px;border:1px solid var(--line);border-radius:20px;background:var(--white)}.lane:first-child{background:var(--mint)}.lane h2{margin:0 0 6px;font-size:1.3rem}.lane p{margin:0 0 14px;color:var(--muted);font-size:.9rem}.write{min-height:120px;padding:12px;border:1px dashed #93a0b2;border-radius:12px;background:rgba(255,255,255,.65);outline:none;white-space:pre-wrap}.starter{margin:16px 0 44px;padding:24px;border:2px solid var(--green);border-radius:22px;background:white}.starter label{display:block;font-weight:900;margin-bottom:9px}.starter input{width:100%;padding:14px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:1.04rem}.rule{margin:12px 0 0;color:var(--muted)}.footer{display:flex;justify-content:space-between;gap:18px;padding:22px 0 40px;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem}@media(max-width:700px){.board{grid-template-columns:1fr}.lane{min-height:180px}.footer{flex-direction:column}}@media print{header,.timer,.print{display:none}.hero{padding:10px 0}.shell{width:100%}.board{grid-template-columns:repeat(3,1fr)}body{background:white}.lane{min-height:340px}.starter{margin-bottom:10px}}
+</style>
+</head>
+<body>
+<header class="shell"><a href="index.html">PAUSE90</a><span>Prototype Lab · Free</span></header>
+<main class="shell">
+<section class="hero"><p class="eyebrow">ADHD / executive-function prototype</p><h1>Turn time fog into one next move.</h1><p class="lead">This is not another planner to maintain. Give the page ninety seconds: sort what is pulling at you, then choose one visible action that fits inside ten minutes.</p><div class="timer"><button id="start">Start 90 seconds</button><span class="clock" id="clock" aria-live="polite">1:30</span></div></section>
+<section class="board" aria-label="Time Anchor">
+<article class="lane"><h2>NOW</h2><p>What truly needs attention in this window?</p><div class="write" contenteditable="true" role="textbox" aria-label="Now tasks" data-key="now"></div></article>
+<article class="lane"><h2>NEXT</h2><p>What can wait until the current move is done?</p><div class="write" contenteditable="true" role="textbox" aria-label="Next tasks" data-key="next"></div></article>
+<article class="lane"><h2>NOT NOW</h2><p>Park distractions without losing them.</p><div class="write" contenteditable="true" role="textbox" aria-label="Not now tasks" data-key="later"></div></article>
+</section>
+<section class="starter"><label for="move">My visible 10-minute starter action</label><input id="move" data-key="move" placeholder="Example: Open the document and write the title"><p class="rule">Make it observable. “Work on it” is foggy. “Open it and write one line” is visible.</p></section>
+<button class="print" onclick="window.print()">Print or save this page</button>
+<section class="footer"><span>Pause90 Prototype Lab · General organizational aid, not medical treatment.</span><a href="mailto:ari532477@gmail.com?subject=ADHD%20Time%20Anchor%20feedback">Send a real-use report</a></section>
+</main>
+<script>
+const clock=document.querySelector('#clock'),start=document.querySelector('#start');let timer;
+start.addEventListener('click',()=>{clearInterval(timer);let left=90;start.textContent='Reset timer';clock.textContent='1:30';timer=setInterval(()=>{left--;clock.textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');if(left<=0){clearInterval(timer);clock.textContent='Choose one move';}},1000)});
+document.querySelectorAll('[data-key]').forEach(el=>{const key='p90-anchor-'+el.dataset.key;const saved=localStorage.getItem(key);if(saved!==null){if(el.matches('input'))el.value=saved;else el.textContent=saved}el.addEventListener('input',()=>localStorage.setItem(key,el.matches('input')?el.value:el.textContent))});
+</script>
+</body></html>

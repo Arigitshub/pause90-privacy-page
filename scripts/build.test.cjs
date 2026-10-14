@@ -32,6 +32,8 @@ function tempSite(){
 test('build includes public allowlist and excludes all paid files and APIs',()=>{
  const tmp=tempSite();
  try{
+   fs.mkdirSync(path.join(tmp,'public'));
+   fs.writeFileSync(path.join(tmp,'public','leaked-paid-product.pdf'),'%PDF-stale');
    const result=cp.spawnSync(process.execPath,[path.join(tmp,'scripts/build.cjs')],{encoding:'utf8'});
    assert.equal(result.status,0,result.stderr);
    assert.deepEqual(fs.readdirSync(path.join(tmp,'public')).sort(),expected.slice().sort());

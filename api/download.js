@@ -1,7 +1,8 @@
 const Stripe = require('stripe');
 const { readFile } = require('node:fs/promises');
 const path = require('node:path');
-const { entitledFile, offers } = require('../lib/entitlement.cjs');
+const { entitledFile } = require('../lib/entitlement.cjs');
+const { deliveryConfig } = require('../lib/delivery-config.cjs');
 const { signGrant } = require('../lib/download-grants.cjs');
 
 module.exports = async function handler(req, res) {
@@ -13,15 +14,10 @@ module.exports = async function handler(req, res) {
   const id = req.query?.session_id;
   if (typeof id !== 'string' || !/^cs_(test|live)_[A-Za-z0-9]+$/.test(id))
     return res.status(400).send('Open the download link from your completed checkout.');
-  const live = process.env.DELIVERY_MODE === 'live';
-  const key = process.env.STRIPE_RESTRICTED_KEY;
-  if (!['test', 'live'].includes(process.env.DELIVERY_MODE) || !key ||
-      !key.startsWith(live ? 'rk_live_' : 'rk_test_'))
-    return res.status(503).send('Downloads are not configured yet. Contact ari532477@gmail.com for your PDF.');
-  const catalog = live ? offers : {
-    ...(process.env.TEST_TINY_WIN_PAYMENT_LINK ? { [process.env.TEST_TINY_WIN_PAYMENT_LINK]: { amount: 300, file: 'one-tiny-win.pdf' } } : {}),
-    ...(process.env.TEST_KIT_PAYMENT_LINK ? { [process.env.TEST_KIT_PAYMENT_LINK]: { amount: 900, file: 'pocket-reset-kit.pdf' } } : {}),
-  };
+  const config = deliveryConfig();
+  if (!config) return res.status(503).send('Downloads are not configured yet. Contact ari532477@gmail.com.');
+  const { live, key, catalog, sessionPattern } = config;
+  if (!sessionPattern.test(id)) return res.status(403).send('This purchase is not authorized.');
   try {
     const stripe = new Stripe(key, { maxNetworkRetries: 1, timeout: 10000 });
     const session = await stripe.checkout.sessions.retrieve(id, { expand: ['payment_intent.latest_charge'] });

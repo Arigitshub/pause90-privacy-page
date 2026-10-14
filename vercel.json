@@ -2,15 +2,31 @@
   "buildCommand": "npm run build",
   "outputDirectory": "public",
   "functions": {
-    "api/download.js": { "includeFiles": "private-products/*.pdf" },
-    "api/redeem.js": { "includeFiles": "private-products/*" }
+    "api/download.js": {
+      "includeFiles": "private-products/*.pdf"
+    },
+    "api/redeem.js": {
+      "includeFiles": "private-products/*"
+    }
   },
-  "headers": [{
-    "source": "/api/(.*)",
-    "headers": [
-      { "key": "Cache-Control", "value": "private, no-store" },
-      { "key": "Referrer-Policy", "value": "no-referrer" },
-      { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
-    ]
-  }]
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    }
+  ],
+  "public": false
 }

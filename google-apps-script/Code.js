@@ -16,6 +16,20 @@ const P90_TITLES = {
 };
 const P90_LINKED = ['client-ready-kickoff-kit.zip', 'solo-income-planner.pdf'];
 
+// Use a separate Script project/properties for sandbox tests; never reuse live state.
+function p90Config(props = PropertiesService.getScriptProperties()) {
+  const mode = props.getProperty('DELIVERY_MODE') || 'live';
+  if (mode === 'live') return { origin: P90_ORIGIN, offers: P90_OFFERS, pattern: /^cs_live_[A-Za-z0-9]+$/ };
+  if (mode !== 'test') throw new Error('Invalid delivery mode');
+  const origin = props.getProperty('DELIVERY_PUBLIC_ORIGIN');
+  const offers = JSON.parse(props.getProperty('TEST_PAYMENT_LINKS') || '[]');
+  if (!/^https:\/\/[a-z0-9.-]+$/i.test(origin || '') || origin === P90_ORIGIN ||
+      !Array.isArray(offers) || !offers.length ||
+      offers.some(id => !/^plink_[A-Za-z0-9]+$/.test(id) || P90_OFFERS.indexOf(id) !== -1))
+    throw new Error('Configure isolated sandbox origin and links');
+  return { origin, offers, pattern: /^cs_test_[A-Za-z0-9]+$/ };
+}
+
 function p90Hash(value) {
   return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, value)
     .map(b => ('0' + (b & 255).toString(16)).slice(-2)).join('');
@@ -43,9 +57,10 @@ function doPost(event) {
     if(props.getProperty('ENABLED')!=='true') return p90Output({ok:false});
     const secret=props.getProperty('GMAIL_DELIVERY_TOKEN');
     if(!secret||secret.length<40) return p90Output({ok:false});
+    const config=p90Config(props);
     const body=JSON.parse(event.postData.contents);
     if(!Number.isSafeInteger(body.ts)||Math.abs(Math.floor(Date.now()/1000)-body.ts)>300||
-       !/^cs_live_[A-Za-z0-9]+$/.test(body.session_id||'')||
+       !config.pattern.test(body.session_id||'')||
        !/^evt_[A-Za-z0-9]+$/.test(body.event_id||'')||
        !/^[0-9a-f]{64}$/.test(body.sig||'')) return p90Output({ok:false});
     const message='p90-webhook-v1:'+body.ts+':'+body.session_id+':'+body.event_id;
@@ -69,6 +84,7 @@ function installDelivery() {
   const props=PropertiesService.getScriptProperties();
   if((props.getProperty('GMAIL_DELIVERY_TOKEN')||'').length<40)
     throw new Error('Configure GMAIL_DELIVERY_TOKEN in Script Properties first.');
+  p90Config(props); // Validate isolation before installing a timer.
   if(!ScriptApp.getProjectTriggers().some(t=>t.getHandlerFunction()==='deliverPaidOrders'))
     ScriptApp.newTrigger('deliverPaidOrders').timeBased().everyMinutes(5).create();
   props.setProperty('ENABLED','true');
@@ -76,7 +92,8 @@ function installDelivery() {
 function pauseDelivery() {PropertiesService.getScriptProperties().setProperty('ENABLED','false');}
 
 function p90FetchEmailLink(sessionId, token) {
-  const response=UrlFetchApp.fetch(P90_ORIGIN+'/api/email-link', {
+  const { origin } = p90Config();
+  const response=UrlFetchApp.fetch(origin+'/api/email-link', {
     method:'post',contentType:'application/json',
     payload:JSON.stringify({session_id:sessionId}),
     headers:{Authorization:'Bearer '+token},followRedirects:false,muteHttpExceptions:true,
@@ -85,7 +102,7 @@ function p90FetchEmailLink(sessionId, token) {
   if(response.getResponseCode()!==200) throw new Error('Email recovery link unavailable');
   const data=JSON.parse(response.getContentText());
   if(data.id!==sessionId || P90_LINKED.indexOf(data.filename)<0 ||
-     typeof data.url!=='string' || !data.url.startsWith(P90_ORIGIN+'/api/redeem?token=') ||
+     typeof data.url!=='string' || !data.url.startsWith(origin+'/api/redeem?token=') ||
      data.expires_after_seconds!==72*3600 ||
      typeof data.email!=='string' || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(data.email))
     throw new Error('Invalid email delivery response');
@@ -95,7 +112,8 @@ function p90FetchEmailLink(sessionId, token) {
 // Never send twice on uncertain outcomes. The hash is stable across webhook replays
 // and reconciliation scans. The saved state is preserved indefinitely.
 function p90SendOrder(order, token, props) {
-  if(typeof order.id!=='string'||!/^cs_live_[A-Za-z0-9]+$/.test(order.id))
+  const config = p90Config(props);
+  if(typeof order.id!=='string'||!config.pattern.test(order.id))
     throw new Error('Invalid Stripe order ID');
   const hash=p90Hash(order.id), key='order_'+hash;
   const prior=props.getProperty(key);
@@ -119,7 +137,7 @@ function p90SendOrder(order, token, props) {
     body='Thanks for purchasing '+title+'.\n\nDownload your file here (link valid for 72 hours):\n'+
       info.url+'\n\nIf your link expires, reply to this email for help.\n\nAri\nThe New Mind AI';
   } else {
-    const url=P90_ORIGIN+'/api/download?session_id='+encodeURIComponent(order.id);
+    const url=config.origin+'/api/download?session_id='+encodeURIComponent(order.id);
     const download=UrlFetchApp.fetch(url,{followRedirects:false,muteHttpExceptions:true});
     if(download.getResponseCode()===403) return false;
     if(download.getResponseCode()!==200) throw new Error('Legacy paid PDF unavailable');
@@ -137,7 +155,7 @@ function p90SendOrder(order, token, props) {
   if(MailApp.getRemainingDailyQuota()<1) throw new Error('Mail quota reached');
   props.setProperty(key,'sending_'+Date.now());
   try {
-    MailApp.sendEmail({to:email,name:'Ari | Pause90',replyTo:P90_OWNER,
+    MailApp.sendEmail({to:props.getProperty('DELIVERY_MODE') === 'test' ? P90_OWNER : email,name:'Ari | Pause90',replyTo:P90_OWNER,
       subject:'Your '+title+' download',body:body+'\nOrder reference: '+hash.slice(0,12),
       ...(attachment?{attachments:[attachment]}:{})});
     props.setProperty(key,'sent');
@@ -158,6 +176,7 @@ function deliverPaidOrders() {
       throw new Error('Fulfillment state needs larger storage; stop safely.');
     const token=props.getProperty('GMAIL_DELIVERY_TOKEN');
     if(!token||token.length<40) throw new Error('Delivery token missing');
+    const config=p90Config(props);
     const started=Date.now();
     // Webhook hints first. Each order is freshly checked against Stripe by Vercel.
     const review=[];
@@ -165,16 +184,16 @@ function deliverPaidOrders() {
     for(const q of queued) {
       if(Date.now()-started>210000) return;
       const sid=props.getProperty(q);
-      if(!/^cs_live_[A-Za-z0-9]+$/.test(sid||'')) throw new Error('Invalid queued ID');
+      if(!config.pattern.test(sid||'')) throw new Error('Invalid queued ID');
       try {
         if(p90SendOrder({id:sid},token,props)) props.deleteProperty(q);
       } catch { review.push(p90Hash(sid).slice(0,12)); }
     }
     // Independent reconciliation catches deliveries missed by webhook or failed relay.
-    for(const link of P90_OFFERS) {
+    for(const link of config.offers) {
       if(Date.now()-started>210000) return;
       const cursorKey='cursor_'+link, cursor=props.getProperty(cursorKey);
-      const endpoint=P90_ORIGIN+'/api/gmail-orders?payment_link='+encodeURIComponent(link)+
+      const endpoint=config.origin+'/api/gmail-orders?payment_link='+encodeURIComponent(link)+
         (cursor?'&starting_after='+encodeURIComponent(cursor):'');
       const response=UrlFetchApp.fetch(endpoint,{
         headers:{Authorization:'Bearer '+token},followRedirects:false,muteHttpExceptions:true,
@@ -188,7 +207,7 @@ function deliverPaidOrders() {
         catch {review.push(p90Hash(order.id).slice(0,12));}
       }
       if(page.next) {
-        if(!/^cs_live_[A-Za-z0-9]+$/.test(page.next)) throw new Error('Invalid cursor');
+        if(!config.pattern.test(page.next)) throw new Error('Invalid cursor');
         props.setProperty(cursorKey,page.next);
       } else props.deleteProperty(cursorKey);
     }

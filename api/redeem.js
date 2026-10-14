@@ -1,7 +1,8 @@
 const Stripe = require('stripe');
 const { readFile } = require('node:fs/promises');
 const path = require('node:path');
-const { entitledFile, offers } = require('../lib/entitlement.cjs');
+const { entitledFile } = require('../lib/entitlement.cjs');
+const { deliveryConfig } = require('../lib/delivery-config.cjs');
 const { verifyGrant } = require('../lib/download-grants.cjs');
 
 module.exports = async function handler(req, res) {
@@ -11,16 +12,17 @@ module.exports = async function handler(req, res) {
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   if (req.method !== 'GET') return res.status(405).send('Method not allowed');
   const data = verifyGrant(req.query?.token, process.env.DELIVERY_LINK_SECRET);
-  if (!data || process.env.DELIVERY_MODE !== 'live' ||
-      !process.env.STRIPE_RESTRICTED_KEY?.startsWith('rk_live_'))
+  const config = deliveryConfig();
+  if (!data || !config || !config.sessionPattern.test(data.sessionId))
     return res.status(403).send('Invalid or expired download link. Use your original purchase confirmation.');
+  const { live, key, catalog } = config;
   try {
-    const stripe = new Stripe(process.env.STRIPE_RESTRICTED_KEY, { maxNetworkRetries: 1, timeout: 10000 });
+    const stripe = new Stripe(key, { maxNetworkRetries: 1, timeout: 10000 });
     const session = await stripe.checkout.sessions.retrieve(data.sessionId, { expand: ['payment_intent.latest_charge'] });
-    const offer = offers[session.payment_link];
+    const offer = catalog[session.payment_link];
     if (!offer?.price) return res.status(403).send('This download is not authorized.');
     const page = await stripe.checkout.sessions.listLineItems(data.sessionId, { limit: 5 });
-    const allowed = entitledFile(session, true, offers, page.has_more ? null : page.data);
+    const allowed = entitledFile(session, live, catalog, page.has_more ? null : page.data);
     if (!allowed || allowed !== data.filename) return res.status(403).send('This download is not authorized.');
     const bytes = await readFile(path.join(process.cwd(), 'private-products', allowed));
     const isPdf = allowed.endsWith('.pdf');

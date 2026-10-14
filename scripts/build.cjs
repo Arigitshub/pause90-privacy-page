@@ -17,6 +17,7 @@ for (const [name,expected] of Object.entries(protectedAssets)) {
   if (!fs.existsSync(file) || crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex') !== expected)
     throw new Error(`Missing or changed private product ${name}. Do not deploy or update Stripe links.`);
 }
+fs.rmSync(path.join(root, 'public'), { recursive: true, force: true });
 fs.mkdirSync(path.join(root, 'public'), { recursive: true });
 // Only public marketing assets; paid products and server code never copied.
 for (const name of ['index.html', 'privacy.html', 'kit.html', 'one-tiny-win.html', 'Pause90_One_Tiny_Win_Sample_v1.pdf', 'one-tiny-win-preview.png', 'pocket-reset-kit-preview.png', 'make-a-task-smaller.html', 'sitemap.xml', '759d9d15023d4a54875c45e4e2fff712.txt']) {

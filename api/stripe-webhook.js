@@ -2,10 +2,14 @@
 // Only a correctly signed Stripe event is eligible for relay; worker rechecks payment.
 const Stripe = require('stripe');
 const {signEnvelope} = require('../lib/webhook-relay.cjs');
+const { deliveryConfig } = require('../lib/delivery-config.cjs');
 
 module.exports = async function handler(req,res) {
   res.setHeader('Cache-Control','private, no-store');
   if(req.method !== 'POST') return res.status(405).end();
+  const config = deliveryConfig();
+  if (!config) return res.status(503).end();
+  const { live, key, catalog, sessionPattern } = config;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (typeof webhookSecret !== 'string' || !webhookSecret.startsWith('whsec_'))
     return res.status(503).end();
@@ -26,18 +30,18 @@ module.exports = async function handler(req,res) {
     }
     if(!raw?.length || raw.length>65536) return res.status(400).end();
     // constructEvent relies solely on raw body and the endpoint-specific signing secret.
-    const stripe = new Stripe(process.env.STRIPE_RESTRICTED_KEY || 'rk_live_unconfigured');
+    const stripe = new Stripe(key);
     let event;
     try { event = stripe.webhooks.constructEvent(raw,sig,webhookSecret); }
     catch { return res.status(400).end(); }
     if(!['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type))
       return res.status(200).json({received:true});
     const session=event.data?.object;
-    if(!session || session.object!=='checkout.session' || session.livemode!==true ||
-       !/^cs_live_[A-Za-z0-9]+$/.test(session.id || '') ||
+    if(!session || session.object!=='checkout.session' || event.livemode!==live || session.livemode!==live ||
+       !sessionPattern.test(session.id || '') ||
        session.payment_status!=='paid') return res.status(200).json({received:true});
     const link=session.payment_link;
-    if(link!=='plink_1UPUhuFUkdXDZAscmOmda3aw' && link!=='plink_1UPUi3FUkdXDZAsc6WpS7cnF')
+    if(!catalog[link]?.price)
       return res.status(200).json({received:true});
     const url=process.env.GMAIL_WEB_APP_URL;
     const token=process.env.GMAIL_DELIVERY_TOKEN;

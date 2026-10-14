@@ -51,3 +51,42 @@ Do not add the new live webhook endpoint to Stripe until Vercel and Apps Script 
 Until redirect cutover: current two Stripe Payment Links remain at public URLs. No customer delivery should be disrupted by an unmerged PR. After redirect cutover, rollback by restoring original links *only as an emergency last resort* because that restores free download access; preferably fix forward or temporarily disable both links while preserving customers' support contact and providing manual fulfillment.
 
 Security limits: a paid buyer can always save and share a digital file; signed URLs are bearer tokens and can be forwarded within validity. A Checkout Session ID is also a bearer capability; avoid leaking it in analytics or logs. Never claim current files can be made secret retrospectively after a public release.
+
+
+## October 14 verification and smallest corrections (not activated)
+
+Source reviewed: PR #22 head `4fa6c9150a7782a8e53aec1d475e5f501386268d`; main `9d13fa6e7bcef7d60bc427840c8622903ab364a6`.
+
+### Independently observed
+
+- Connected Stripe exposes only Pause90 **live** account `acct_1NzqGyFUkdXDZAsc`; no sandbox account is accessible. Read-only live checks only; no payment, email, webhook registration or Payment Link mutation.
+- Both new live Payment Links remain active and redirect to the original public GitHub Pages binaries. Old $3/$9 links still redirect to the existing Vercel download route. The live webhook inventory contains no endpoint for `pause90-pdf-delivery.vercel.app`.
+- Public Vercel GET observations: `/api/download` without a session returns **400**; `/api/gmail-orders` without authorization returns **401**; `/api/redeem` and `/api/stripe-webhook` return **404**. These observations do not prove successful paid fulfillment, private deployment integrity or worker activation.
+- Vercel plugin discovery reports **not installed** (previously suggested October 11). Dashboard access lands on sign-in; authenticated project settings, plan, usage, source, environment names, function bundles and logs remain inaccessible. No authentication or deployment changes were made.
+- Both repository product sizes and SHA-256 match the table above. ZIP CRC check passes; entries are US Letter PDF, A4 PDF, email templates TXT and START_HERE TXT. These are **source** integrity results, not deployed-private-asset verification.
+- A clean checkout's `npm run build` safely fails on missing `private-products/one-tiny-win.pdf`. Older private PDFs and the deployment asset channel must be preserved, not replaced with placeholders.
+- Current Work automation lookup did not find a named paid-fulfillment task. This does not establish the state of the documented Windows/local Codex fallback or Apps Script trigger; inspect those before any live worker handover. Historical send state must be imported and concurrent senders avoided.
+
+### Corrections on the existing draft branch
+
+The original draft could not perform the required new-product sandbox tests: new offers were missing from its test catalog; grants, redemption, recovery, reconciliation, relay and Script session checks were live-only. A shared fail-closed delivery configuration now supports explicitly configured sandbox Link/Price/Product IDs, rejecting live IDs and wrong key/session modes. Live identifiers and legacy direct-PDF behavior remain unchanged.
+
+Apps Script supports a **separate sandbox project**, explicit preview origin and sandbox links. Sandbox mail is constrained to the approved owner; live recipient behavior and historical `order_` state keys are preserved. A preview cannot default to the production recovery origin. Separate signing/relay tokens and webhook secrets are mandatory between environments.
+
+The public output directory is rebuilt from scratch **after** asset validation, removing stale unallowlisted files before a successful build. `vercel.json` explicitly disables public deployment source/log access. No public binaries were removed or added.
+
+`npm test`: **27/27 local tests pass**, including both sandbox product route chains, exact authorization failures, refund/dispute rejection, wrong-file/tampered/expired grants, buyer-email binding, legacy direct downloads, real Stripe SDK raw-body signatures, streamed webhook bodies, unavailable relay retry behavior, Script replay deduplication, owner-only sandbox mail, uncertain-send review and stale-public-file exclusion. Stripe sessions, file reads, Google services and email sending are mocked. **No real sandbox purchase, Vercel runtime test or inbox delivery has been performed.**
+
+### Zero-additional-cost deployment assessment
+
+The existing `includeFiles` + server-only `private-products/` approach is a candidate requiring **no new storage subscription**: upload approved untracked files with the existing project's private CLI deployment flow, bundle them only into authorized functions, publish only the allowlisted `public/` output, and keep deployment source access private. The two added files total **147,451 bytes**. Verify all four assets in the preview bundle and test that guessed static/source URLs cannot retrieve them. Do not put private binary contents or download tokens in Git or logs.
+
+This is conditional, **not an approved or verified $0 hosting result**. Vercel's Hobby plan is personal/noncommercial; paid-product fulfillment cannot be treated as an eligible free Hobby workload. If the existing account already has a suitable commercial plan and sufficient included usage, this path may have $0 incremental cost. If it is Hobby, do not upgrade or incur spend; the no-spend constraint requires an already-owned suitable host or a separately approved alternative. No new architecture or paid service was provisioned.
+
+Official references: https://vercel.com/docs/functions/limitations ; https://vercel.com/docs/project-configuration ; https://vercel.com/pricing ; https://vercel.com/legal/terms .
+
+### Exact blocker and one next action
+
+**First blocker:** authenticated access to the existing Vercel project, so its commercial plan/usage, deployment source, environment names and private assets can be inspected. **Next action:** connect the existing Vercel account/project to this workspace. Then inspect before choosing/deploying any path. Actual sandbox testing also requires connecting the Pause90 Stripe sandbox and an isolated authorized Apps Script worker. Preserve the draft and all cutover gates until deployed end-to-end tests pass.
+
+Sandbox setup once access is available: use `DELIVERY_MODE=test`, `rk_test_` restricted key, both `TEST_CLIENT_READY_*` and `TEST_SOLO_PLANNER_*` Link/Price/Product IDs from sandbox readback, explicit preview `DELIVERY_PUBLIC_ORIGIN`, preview-only secrets and webhook. In a new Script project set `DELIVERY_MODE=test`, the matching preview origin, `TEST_PAYMENT_LINKS` as a JSON array, and the matching preview-only `GMAIL_DELIVERY_TOKEN`. Never edit the production worker properties to run tests. Redeem and hash each real downloaded product; replay signed events; check a single owner email and unchanged live checkout configuration before activation.
